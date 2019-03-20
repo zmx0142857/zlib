@@ -1,297 +1,300 @@
-const Date YEAR2000 = 145732;		// Sat Jan 1 2000
-const int YEAR = 365;
-const int QUADYEAR = 4*YEAR+1;
-const int CENTURY = 25*QUADYEAR-1;
-const int QUADCENTURY = 4*CENTURY+1;
-const int BASE_YEAR = 1601;
+#include "calendar.h"
 
+// -------- consts --------
+
+const Date YEAR1 = 1;						// 1
+const int YEAR = 365;						// 365
+const int QUADYEAR = 4 * YEAR + 1;			// 1461
+const int CENTURY = 25 * QUADYEAR - 1;		// 36524
+const int QUADCENTURY = 4 * CENTURY + 1;	// 146097
+const Date YEAR2001 = 5 * QUADCENTURY + 1;	// 730486
+const Date YEAR1970 = 719163;				// 719163
+
+// -------- helper functions --------
+
+bool is_leap(const Year year)
+{
+	// didn't check year == 0
+	int y = year < 0 ? year+1 : year;
+	return y % 4 == 0 && (y % 100 != 0 || y % 400 == 0);
+}
+
+Month str2month(const char *s)
+{
+	static const char *name[] = {
+		"jan", "feb", "mar", "apr", "may", "jun",
+		"jul", "aug", "sep", "oct", "nov", "dec"
+	};
+
+	// s.length < 3
+	if (!s || s[0] == '\0')
+		exit(1);
+	if (s[1] == '\0' || s[2] == '\0') {
+		printf("invalid monthname %s", s);
+		exit(1);
+	}
+
+	// sub = s.substr(0,3).tolower()
+	char sub[4] = "...";
+	for (int i = 0; i < 3; ++i)
+		sub[i] = tolower(s[i]);
+
+	for (Month i = 0; i < 12; ++i) {
+		if (strcmp(sub, name[i]) == 0)
+			return i+1;
+	}
+
+	printf("invalid monthname %s", s);
+	exit(1);
+}
+
+void month2str(char *buf, const Month m)
+{
+	static const char *name[] = {
+		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+	};
+
+	if (1 <= m && m <= 12)
+		strcpy(buf, name[m-1]);
+	else
+		strcpy(buf, "Dec");
+}
+
+int month_length(const Month m, const Year y)
+{
+	static int len[13] = {
+		31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+	};
+
+	if (m == 2)
+		return len[m] + is_leap(y);
+	else if (1 <= m && m <= 12)
+		return len[m];
+	else
+		return len[0];
+}
+
+// -------- constructors --------
+
+/* qc is the quadcentury count since AD
+ * -1 = (Jan 1 -400 ~ Dec 31 -001)
+ * 0 = (Jan 1 0001 ~ Dec 31 0400)
+ * 1 = (Jan 1 0401 ~ Dec 31 0800)
+ * 5 = (Jan 1 2001 ~ Dec 31 2400)
+ *
+ * c is the century count within its quadcentury
+ * 0 = (Jan 1 0001 ~ Dec 31 0100) = (Jan 1 2001 ~ Dec 31 2100)
+ * 3 = (Jan 1 1901 ~ Dec 31 2000)
+ * 0 <= c <= 3
+ *
+ * qy is the quadyear count within its century
+ * 0 <= qy <= 24
+ *
+ * y is the year count within its quadyear
+ * 0 = (Jan 1 1601 ~ Dec 31 1601) = (Jan 1 1997 ~ Dec 31 1997)
+ * 3 = (Jan 1 1604 ~ Dec 31 1604) = (Jan 1 2000 ~ Dec 31 2000)
+ * 0 <= y <= 3
+ */
 Date int2date(const Year year, const Month month, const Day day)
 {
-	int y = year - BASE_YEAR;	// number of years in current era
-	int qc = y/400;				// number of quadcenturies in current era
-	int c = y%400/100;			// number of centuries in current quadcentury
-	int qy = y%100/4;			// number of quadyears in current century
-	y %= 4;						// number of quadyears in current era
-
+	if (year == 0) {
+		printf("invalid year %d\n", year);
+		exit(1);
+	}
+	int y = year - (year > 0);
+	int qc = y / 400;	int qcr = y % 400;
+	// the negative division rounds to 0
+	// now correct it for rounding downwards
+	if (year < 0 && qcr != 0) {
+		--qc;
+		qcr += 400;
+	}
+	int c = qcr / 100;	int cr = qcr % 100;
+	int qy = cr / 4;	y = cr % 4;	
 	Date ret = QUADCENTURY*qc + CENTURY*c + QUADYEAR*qy + YEAR*y;
-	Month m;
-	for (m = 1; m < month; ++m)
+
+	if (month < 1 || month > 12) {
+		printf("invalid month %d\n", month);
+		exit(1);
+	}
+	for (Month m = 1; m < month; ++m)
 		ret += month_length(m, year);
+
+	if (day < 1 || day > month_length(month, year)) {
+		printf("invalid day %d\n", day);
+		exit(1);
+	}
 	ret += day;
-	validate(&ret);
+	//printf("int2date: %d\n", ret);
 	return ret;
 }
 
-Date str2date(const char *s)
+Date str2date(const char *str)
 {
-	s = strtok(NULL, " ");		// move pointer ahead
+	char cpy[256];
+	strcpy(cpy, str);
+	char *s = cpy;
+	const char *delim = " ,.-/";
+
+	s = strtok(s, delim);
 	Month m = str2month(s);
-
-	s = strtok(NULL, " ");
-	if (isalpha(*s))			// maybe this is the month name
-	{
-		m = str2month(s);
-		s = strtok(NULL, " ");
-	}
-	Day d = atoi(s);			// extract day of month
-
-	s = strtok(NULL, " ,");
-	Year y = atoi(s);			// extract year
-
+	s = strtok(NULL, delim);
+	Day d = atoi(s);
+	s = strtok(NULL, delim);
+	Year y = atoi(s);
+	//printf("str2date: %d %d %d\n", y, m, d);
 	return int2date(y, m, d);
 }
 
-Year year(const Date date)
-{
-	return BASE_YEAR + 400*(quadcentury_cnt(&date)-1) + 100*(century_cnt(&date)-1)
-		+ 4*(quadcentury_cnt(&date)-1) + year_cnt(&date)-1;
-}
+// -------- getters --------
 
-Month month(const Date date)
+// qc, c, qy and y are the same as int2date
+// doy = day of year
+void parse_year(const Date date, Year *year, Day *doy)
 {
-	Day d = day_of_year(date);
-	Year y = year(date);
-	Month m;
-	for (m = 1; m < 12; ++m)
-	{
-		int len = month_length(y, m);
-		if (d <= len)
-			return m;
-		d -= len;
+	Date d = date-1;
+	int qc = d / QUADCENTURY;	int qcr = d % QUADCENTURY;
+	if (d < 0 && qcr != 0) {
+		--qc;
+		qcr += QUADCENTURY;
 	}
-	return 12;
-}
-
-Day day_of_month(const Date date)
-{
-	Day d = day_of_year(date);
-	Year y = year(date);
-	Month m;
-	for (m = 1; m < 12; ++m)
-	{
-		int len = days_in_month(y, m);
-		if (d <= len)
-			return d;
-		d -= len;
+	int c = qcr / CENTURY;		int cr = qcr % CENTURY;
+	int qy = cr / QUADYEAR;		int qyr = cr % QUADYEAR;
+	int y = qyr / YEAR;			*doy = qyr % YEAR + 1;
+	// meets the whole 400 years, e.g. Dec 31 2000
+	if (c == 4) {
+		c = y = 3;
+		qy = 24;
+		*doy = 366;
 	}
-	return d;
+	//printf("qc: %d, c: %d, qy: %d, y: %d\n", qc, c, qy, y);
+	*year = 400*qc + 100*c + 4*qy + y + (d >= 0);
 }
 
-Day day_of_year(const Date date)
+Year get_year(const Date date)
 {
-	return (date-1) % QUADCENTURY % CENTURY % QUADYEAR % YEAR + 1;
+	Year year;
+	parse_year(date, &year, &year);
+	return year;
 }
 
-void day_of_week(char *buf, const Date date)
+Day get_doy(const Date date) // day of year
+{
+	Day day;
+	parse_year(date, &day, &day);
+	return day;
+}
+
+void parse_month(const Date date, Year *year, Month *month, Day *day)
+{
+	parse_year(date, year, day);
+	for (*month = 1; *month < 12; ++*month) {
+		int len = month_length(*month, *year);
+		if (*day <= len)
+			return;
+		*day -= len;
+	}
+	*month = 12;
+}
+
+Month get_month(const Date date)
+{
+	Month month;
+	parse_month(date, &month, &month, &month);
+	return month;
+}
+
+Day get_day(const Date date)
+{
+	Day day;
+	parse_month(date, &day, &day, &day);
+	return day;
+}
+
+void get_weekday(char *buf, const Date date)
 {
 	static const char *weekday_name[] = {
 		"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 	};
-	sprintf(buf, weekday_name[date % 7]);	// Dec 31 1600 was a Sunday
+
+	strcpy(buf, weekday_name[date % 7]);	// Dec 31 -0001 was a Sunday
 }
 
-//----------------------------------------------------
-std::string Date::to_str() const
+// -------- output --------
+
+void date2str(char *buf, const Date date)
 {
-	std::ostringstream out;
-	out << *this;
-	return out.str();
+	Year year; Month month; Day day;
+	parse_month(date, &year, &month, &day);
+
+	char weekdayname[10], monthname[10];
+	get_weekday(weekdayname, date);
+	month2str(monthname, month);
+
+	sprintf(buf, "%s %s %d %d", weekdayname, monthname, day, year);
 }
 
-std::ostream &operator<<(std::ostream &os, const Date &rhs)
+void date_printf(const Date date)
 {
-	if (total_day == 0)
-		return os << "NAD";			// not a date
-	return os << day_of_week() << ' ' << month_name(month()) << ' '
-		<< day_of_month() << ' ' << year();
+	char buf[256];
+	date2str(buf, date);
+	printf("%s", buf);
 }
 
-std::istream &operator>>(std::istream &is, Date &rhs)
+void cal2str(char *buf, const Date date)
 {
-	std::string s;
-	is >> s;
-	date = Date(s);
-	return is;
-}
+	Year year; Month month; Day day;
+	parse_month(date, &year, &month, &day);
 
-bool Date::operator==(const Date &rhs) const
-{
-	return total_day == rhs.total_day;
-}
+	char monthname[10];
+	month2str(monthname, month);
+	sprintf(buf, "%s %d", monthname, year);
+	int padding = (20 - strlen(buf)) / 2;
+	for (int i = 0; i < padding; ++i)
+		buf += sprintf(buf, " ");
+	buf += sprintf(buf, "%s %d\n", monthname, year);
+	buf += sprintf(buf, "Su Mo Tu We Th Fi Sa\n");
 
-bool Date::operator!=(const Date &rhs) const
-{
-	return total_day != rhs.total_day;
-}
-
-bool Date::operator<(const Date &rhs) const
-{
-	return total_day < rhs.total_day;
-}
-
-bool Date::operator>(const Date &rhs) const
-{
-	return total_day > rhs.total_day;
-}
-
-bool Date::operator<=(const Date &rhs) const
-{
-	return total_day <= rhs.total_day;
-}
-
-bool Date::operator>=(const Date &rhs) const
-{
-	return total_day >= rhs.total_day;
-}
-
-
-Date &Date::operator++()
-{
-	++total_day;
-	validate();
-	return *this;
-}
-
-Date &Date::operator--()
-{
-	--total_day;
-	validate();
-	return *this;
-}
-
-Date Date::operator++(int)
-{
-	Date ret = *this;
-	++*this;
-	return ret;
-}
-
-Date Date::operator--(int)
-{
-	Date ret = *this;
-	--*this;
-	return ret;
-}
-
-int operator-(const Date &lhs, const Date &rhs)
-{
-	return lhs.total_day - rhs.total_day;
-}
-
-Date &Date::operator+=(const int n)
-{
-	total_day += n;
-	return *this;
-}
-
-Date &Date::operator-=(const int n)
-{
-	total_day -= n;
-	return *this;
-}
-
-Date operator+(const int n) const
-{
-	return Date(total_day + n);
-}
-
-Date operator-(const int n) const
-{
-	return Date(total_day - n);
-}
-
-Date Date::today()
-{
-	return Date(__DATE__);
-}
-
-//------------Protected-------------
-
-int Date::year_num() const
-{
-	/* returns the year number within its quadyear
-	 * invariant: 1 <= year_num() <= 4
-	 * 1 = (Jan 1 1601 ~ Dec 31 1601) = (Jan 1 1997 ~ Dec 31 1997)
-	 * 4 = (Jan 1 1604 ~ Dec 31 1604) = (Jan 1 2000 ~ Dec 31 2000)
-	 */
-	return (total_day-1) % QUADCENTURY % CENTURY / QUADYEAR + 1;
-}
-
-int Date::century_num() const
-{
-	/* returns the century number within its quadcentury
-	 * invariant: 1 <= century_num() <= 4
-	 * 1 = (Jan 1 1601 ~ Dec 31 1700) = (Jan 1 2001 ~ Dec 31 2100)
-	 * 4 = (Jan 1 1901 ~ Dec 31 2000)
-	 */
-	return (total_day-1) % QUADCENTURY / CENTURY + 1;
-}
-
-int Date::quadcentury_num() const
-{
-	/* returns th quadcentury number beginning with 1601~2000
-	 * invariant: quadcentury_num() >= 1
-	 * 1 = (Jan 1 1601 ~ Dec 31 2000)
-	 * 2 = (Jan 1 2001 ~ Dec 31 2400)
-	 */
-	return (total_day-1) / QUADCENTURY + 1;
-}
-
-bool Date::is_leap(const int y)
-{
-	return y % 4 == 0 && (y % 100 != 0 || y % 400 == 0);
-}
-
-int Date::month_num(const std::string &s)
-{
-	static const std::string name[] = {
-		"jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep",
-		"oct", "nov", "dec"
-	};
-	if (s.size() < 3) return 12;
-	sub = s.substr(0, 3);
-	for (int i = 0; i < 3; ++i)
-		s[i] = tolower(s[i]);
-	for (int i = 0; i < 12; ++i)
-		if (s == name[i])
-			return i+1;
-	return 12;
-}
-
-std::string Date::month_name(const int m)
-{
-	static const std::string name[] = {
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
-		"Oct", "Nov", "Dec"
-	};
-	if (1 <= m && m <= 12)
-		return name[m-1];
-	return "Dec";
-}
-
-int Date::days_in_month(const int m, const int y)
-{
-	switch (m)
-	{
-		case 1: return 31;
-		case 2: return 28 + is_leap(y);
-		case 3: return 31;
-		case 4: return 30;
-		case 5: return 31;
-		case 6: return 30;
-		case 7: return 31;
-		case 8: return 31;
-		case 9: return 30;
-		case 10: return 31;
-		case 11: return 30;
-		case 12: return 31;
-		default: return 31;
+	int weekday = (date-day+1) % 7;
+	int linebreak = 0;
+	for (int i = 0; i < weekday; ++i)
+		buf += sprintf(buf, "   ");
+	int len = month_length(month, year);
+	for (int i = 1; i <= len; ++i) {
+		if (i == day) {
+			// reverse color
+			buf += sprintf(buf, "\033[7m%2d\033[0m ", i);
+		} else {
+			buf += sprintf(buf, "%2d ", i);
+		}
+		if ((weekday+i-1) % 7 == 6) {
+			buf += sprintf(buf, "\n");
+			++linebreak;
+		}
 	}
+	if (linebreak < 5)
+		buf += sprintf(buf, "\n");
+	sprintf(buf, "\n");
 }
 
-void Date::validate()
+void cal_printf(const Date date)
 {
-	if (total_day < 1)
-		total_day = 0;
+	char buf[1024];
+	cal2str(buf, date);
+	printf("%s", buf);
 }
 
+Date buildday()
+{
+	printf("buildday: %s\n", __DATE__);
+	return str2date(__DATE__);
+}
+
+int main()
+{
+	//test_today();
+	//test_int2date();
+	test_cal_printf();
+	return 0;
+}
