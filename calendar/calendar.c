@@ -26,25 +26,22 @@ Month str2month(const char *s)
 		"jul", "aug", "sep", "oct", "nov", "dec"
 	};
 
-	// s.length < 3
-	if (!s || s[0] == '\0')
-		exit(1);
-	if (s[1] == '\0' || s[2] == '\0') {
-		printf("invalid monthname %s", s);
-		exit(1);
+	// s not NULL and s.length >= 1
+	if (s && s[0] != '\0') {
+		// s.length >= 3
+		if (s[1] != '\0' && s[2] != '\0') {
+			// sub = s.substr(0,3).tolower()
+			char sub[4] = "...";
+			for (int i = 0; i < 3; ++i)
+				sub[i] = tolower(s[i]);
+
+			for (Month i = 0; i < 12; ++i) {
+				if (strcmp(sub, name[i]) == 0)
+					return i+1;
+			}
+		}
+		printf("invalid monthname %s\n", s);
 	}
-
-	// sub = s.substr(0,3).tolower()
-	char sub[4] = "...";
-	for (int i = 0; i < 3; ++i)
-		sub[i] = tolower(s[i]);
-
-	for (Month i = 0; i < 12; ++i) {
-		if (strcmp(sub, name[i]) == 0)
-			return i+1;
-	}
-
-	printf("invalid monthname %s", s);
 	exit(1);
 }
 
