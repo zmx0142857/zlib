@@ -29,7 +29,7 @@ std::istream &operator>>(std::istream &is, Int &rhs)
 	{
 		rhs = Int(s);
 	}
-	catch (std::invalid_argument)
+	catch (const std::invalid_argument &)
 	{
 		rhs = 0;
 		is.setstate(std::istream::failbit);
@@ -881,6 +881,7 @@ const uint32_t Int::MASK = BASE - 1;	// 30 '1's in memory
 
 //------------- test --------------
 
+#ifdef DEBUG
 using namespace std;
 void Int::test_io()
 {
@@ -950,3 +951,5 @@ void Int::test_add()
 		cout << dest << endl;
 	}
 }
+
+#endif

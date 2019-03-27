@@ -1,6 +1,10 @@
 #ifndef Int_h
 #define Int_h
 
+#if __cplusplus < 201101
+#error "require c++11 or later"
+#endif
+
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -10,10 +14,6 @@
 #include <climits>		// LLONG_MAX
 #include <cfloat>		// LDBL_MAX
 #include <stdexcept>	// domain_error argument_error
-
-//------------------------
-//      class  Int       |
-//------------------------
 
 /* Instances represent arbitrarily large integers.
  * Invariants:	Positive integers are stored in an vector 'data', with 
@@ -26,7 +26,6 @@
  *				data: [437976919, 87719511, 107]
  *				neg: false
  */
-
 class Int
 {
 	public:
@@ -112,6 +111,7 @@ class Int
 		static const uint32_t BASE;
 		static const uint32_t MASK;
 
+#ifdef DEBUG
 		// test
 		static void test_io();
 		static void test_arithmetic();
@@ -119,6 +119,7 @@ class Int
 		static void test_bit();
 		static void test_to_int();
 		static void test_add();
+#endif
 
 	protected:
 		std::vector<uint32_t> data;	// array of digits base 10^WIDTH

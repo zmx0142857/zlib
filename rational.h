@@ -1,6 +1,10 @@
 #ifndef Rational_h
 #define Rational_h
 
+#if __cplusplus < 201101
+#error "require c++11 or later"
+#endif
+
 #include <iostream>
 #include <stdexcept>
 #include "int.h"
@@ -29,7 +33,9 @@ class Rat
 
 public:
 	// construct a rational number values n / d + i.
-	Rat(const Int &numerator=0, const Int &denominator=1, const Int &integer_part=0);
+	Rat(const Int &numerator=0,
+		const Int &denominator=1,
+		const Int &integer_part=0);
 	Rat(double);
 	explicit Rat(const std::string &);
 
@@ -41,8 +47,11 @@ public:
 	Rat operator+() const;
 	Rat operator-() const;
 
-	int to_int() const;
-	double to_double() const;
+	operator double() const;
+	operator float() const;
+
+	Int to_Int() const;
+	long double to_double() const;
 	std::string to_decimal() const;
 	std::string to_string() const;
 	std::string to_string2d() const;
@@ -52,16 +61,18 @@ public:
 	Int choose(Int n, Int k);
 	Rat Bernoulli(int n);
 
+#ifdef DEBUG
 	static void test_io();
 	static void test_relation();
 	static void test_arithmetic();
+#endif
 
 protected:
 	Int num;					// numerator
 	Int den;					// denominator, guaranteed to be positive
 
 	void reduce();				// fraction reduce, return void
-	void check_valid();			// make sure the denominator is positive
+	void validate();			// make sure the denominator is positive
 };
 
 #endif // Rational_h
