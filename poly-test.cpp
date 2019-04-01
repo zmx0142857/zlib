@@ -1,4 +1,4 @@
-#include "polynomial.h"
+#include "poly.h"
 #include "test.h"
 using namespace std;
 
@@ -103,11 +103,27 @@ void test_arithmetic2()
 	tout.test("x^3 - 0.5x^2");
 }
 
-int main()
+void help()
 {
-	//test_io();
-	//test_arithmetic1();
-	//test_other_method();
-	test_arithmetic2();
+	cout << "usage: poly-test [option]\n"
+			"-i   test_io\n"
+			"-1   test_arithmetic1\n"
+			"-2   test_arithmetic2\n"
+			"-o   test_other_method\n";
+	exit(0);
+}
+
+int main(int argc, char **argv)
+{
+	if (argc < 2)
+		help();
+
+	switch (argv[1][1]) {
+		case 'i':	test_io();			break;
+		case '1':	test_arithmetic1();	break;
+		case '2':	test_arithmetic2();	break;
+		case 'o':	test_other_method();break;
+		default:	help();
+	}
 	return 0;
 }

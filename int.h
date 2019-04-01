@@ -111,15 +111,13 @@ class Int
 		static const uint32_t BASE;
 		static const uint32_t MASK;
 
-#ifdef DEBUG
 		// test
-		static void test_io();
-		static void test_arithmetic();
-		static void test_factorial(int);
-		static void test_bit();
-		static void test_to_int();
-		static void test_add();
-#endif
+		friend void test_io();
+		friend void test_arithmetic();
+		friend void test_factorial();
+		friend void test_bit();	
+		friend void test_to_int();
+		friend void test_add();
 
 	protected:
 		std::vector<uint32_t> data;	// array of digits base 10^WIDTH

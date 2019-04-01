@@ -1,4 +1,5 @@
-// Implementation for 'int.h'
+// implement "int.h"
+
 #include "int.h"
 
 //---------------- io --------------------
@@ -879,77 +880,3 @@ const size_t Int::WIDTH = 30;			// bits per digit
 const uint32_t Int::BASE = 1 << WIDTH;	// 2^30 = 1073741824
 const uint32_t Int::MASK = BASE - 1;	// 30 '1's in memory
 
-//------------- test --------------
-
-#ifdef DEBUG
-using namespace std;
-void Int::test_io()
-{
-	Int a;
-	while (cin >> a)
-		cout << a << endl;
-}
-
-void Int::test_arithmetic()
-{
-	Int a, b, r; char op;
-	while (cin >> a >> op >> b)
-	{
-		switch (op)
-		{
-			case '<': cout << (a < b) << endl; break;
-			case '+': cout << a + b << endl; break;
-			case '-': cout << a - b << endl; break;
-			case '*': cout << a * b << endl; break;
-			case '/': cout << ::divmod(a, b, r) << ", ";
-					  cout << r << endl; break;
-			case '^': cout << a.pow(b) << endl; break;
-		}
-	}
-}
-
-void Int::test_factorial(int n)
-{
-	// compute (99!) = 933262154439441526816992388562667004907159682643816214685929638952175999932299156089414639761565182862536979208272237582511852109168640000000000000000000000
-	Int prod = 1;
-	while (n != 0)
-		prod *= (n--);
-	cout << prod << endl;
-}
-
-void Int::test_bit()
-{
-	Int a, b; char op;
-	while (cin >> a >> op >> b)
-	{
-		switch (op)
-		{
-			case '<': cout << (a << b.to_int()) << endl; break;
-			case '>': cout << (a >> b.to_int()) << endl; break;
-			case '^': cout << (a ^ b) << endl; break;
-			case '&': cout << (a & b) << endl; break;
-			case '|': cout << (a | b) << endl; break;
-			case '~': cout << (~a) << endl; break;
-		}
-	}
-}
-
-void Int::test_to_int()
-{
-	Int a;
-	cout << "LLONG_MAX =\n" << LLONG_MAX << '\n';
-	while (cin >> a)
-		cout << a.to_int() << endl;
-}
-
-void Int::test_add()
-{
-	Int a, b, dest;
-	while (cin >> a >> b)
-	{
-		add(a.data.begin(), a.data.end(), b.data.begin(), b.data.end(), dest);
-		cout << dest << endl;
-	}
-}
-
-#endif

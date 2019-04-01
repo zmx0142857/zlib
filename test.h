@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 
 class Test: public std::ostringstream {
 

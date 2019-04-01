@@ -1,6 +1,6 @@
-// implementation for class rational
+// implement "rat.h"
 
-#include "rational.h"
+#include "rat.h"
 
 //------------- constructors -----------------
 
@@ -206,14 +206,14 @@ Rat Rat::operator-() const
 	return Rat(-num, den);
 }
 
-Int to_Int() const
+Int Rat::to_Int() const
 {
 	return num / den;
 }
 
-long double to_double() const
+long double Rat::to_double() const
 {
-	return num.to_double() / den.to_double;
+	return num.to_double() / den.to_double();
 }
 
 Int Rat::gcd(Int a, Int b)
@@ -227,44 +227,3 @@ Int Rat::gcd(Int a, Int b)
 	}
 	return a;
 }
-
-//---------- test -------------
-
-#ifdef DEBUG
-using namespace std;
-
-void Rat::test_io()
-{
-	Rat a;
-	while (cin >> a)
-		cout << a << endl;
-}
-
-void Rat::test_relation()
-{
-	Rat a, b;
-	string op;
-	while (cin >> a >> op >> b) {
-		if (op == "==")			cout << (a == b) << endl;
-		else if (op == "!=")	cout << (a != b) << endl;
-		else if (op == "<")		cout << (a < b) << endl;
-		else if (op == ">")		cout << (a > b) << endl;
-		else if (op == "<=")	cout << (a <= b) << endl;
-		else if (op == ">=")	cout << (a >= b) << endl;
-	}
-}
-
-void Rat::test_arithmetic()
-{
-	Rat a, b; char op;
-	while (cin >> a >> op >> b) {
-		switch (op) {
-			case '+': cout << a + b << endl; break;
-			case '-': cout << a - b << endl; break;
-			case '*': cout << a * b << endl; break;
-			case '/': cout << a / b << endl; break;
-		}
-	}
-}
-
-#endif

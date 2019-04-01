@@ -1,5 +1,5 @@
-#ifndef INTERPOLATION_H
-#define INTERPOLATION_H
+#ifndef Interp_h
+#define Interp_h
 
 #if __cplusplus < 201101
 #error "require c++11"
@@ -8,7 +8,7 @@
 #include <vector>
 #include <stdexcept>	// std::out_of_range, std::invalid_argument
 #include <algorithm>	// sort
-#include "polynomial.h"
+#include "poly.h"
 
 const char *LIST_SIZE_NEQ = "The size of two lists are not equal!";
 
@@ -197,4 +197,4 @@ public:
 	}
 };
 
-#endif // INTERPOLATION_H
+#endif // Interp_h

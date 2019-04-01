@@ -1,5 +1,5 @@
-#ifndef POLYNOMIAL_H
-#define POLYNOMIAL_H
+#ifndef Poly_h
+#define Poly_h
 
 #include <iostream>
 #include <list>
@@ -68,6 +68,7 @@ template <class T> class Poly;
 template <class T>
 	std::ostream &operator<<(std::ostream &, const Poly<T> &);
 
+// class polynomial
 template <class T>
 class Poly {
 
@@ -379,4 +380,4 @@ std::ostream &operator<<(std::ostream &os, const Poly<T> &rhs)
 	return os;
 }
 
-#endif // POLYNOMIAL_H
+#endif // Poly_h

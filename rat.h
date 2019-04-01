@@ -1,5 +1,5 @@
-#ifndef Rational_h
-#define Rational_h
+#ifndef Rat_h
+#define Rat_h
 
 #if __cplusplus < 201101
 #error "require c++11 or later"
@@ -61,11 +61,10 @@ public:
 	Int choose(Int n, Int k);
 	Rat Bernoulli(int n);
 
-#ifdef DEBUG
-	static void test_io();
-	static void test_relation();
-	static void test_arithmetic();
-#endif
+	// test
+	friend void test_io();
+	friend void test_relation();
+	friend void test_arithmetic();
 
 protected:
 	Int num;					// numerator
@@ -75,4 +74,4 @@ protected:
 	void validate();			// make sure the denominator is positive
 };
 
-#endif // Rational_h
+#endif // Rat_h
