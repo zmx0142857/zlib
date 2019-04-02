@@ -43,6 +43,48 @@ void test_io()
 	tout.test("-9x^3 - 4x^2 - x");
 }
 
+void test_io2()
+{
+	Term<double>::multiply_sign = "*";
+	Term<double>::exp_sign = "**";
+
+	tout << Poly<double>{0};
+	tout.test("0");
+
+	tout << Poly<double>();
+	tout.test("x");
+
+	tout << Poly<double>{
+		Term<double>(3, 0),
+		Term<double>(2, 1),
+		Term<double>(1, 2)
+	};
+	tout.test("x**2 + 2*x + 3");
+
+	tout << Poly<double>{1, 2, 3};
+	tout.test("x**2 + 2*x + 3");
+
+	tout << Poly<double>{1, -1, -1};
+	tout.test("x**2 - x - 1");
+
+	tout << Poly<double>{1, -4, -10};
+	tout.test("x**2 - 4*x - 10");
+
+	tout << Poly<double>{-1, -4, -10};
+	tout.test("-x**2 - 4*x - 10");
+
+	tout << Poly<double>{-1, -4, 0};
+	tout.test("-x**2 - 4*x");
+
+	tout << Poly<double>{-1, 0, -90};
+	tout.test("-x**2 - 90");
+
+	tout << Poly<double>(
+		[](int i){ return double(-i*i); }, 3
+	);
+	tout.test("-9*x**3 - 4*x**2 - x");
+}
+
 void test_arithmetic1()
 {
 	Poly<double> p, q;
@@ -120,6 +162,7 @@ int main(int argc, char **argv)
 
 	switch (argv[1][1]) {
 		case 'i':	test_io();			break;
+		case 'I':	test_io2();			break;
 		case '1':	test_arithmetic1();	break;
 		case '2':	test_arithmetic2();	break;
 		case 'o':	test_other_method();break;

@@ -1,6 +1,10 @@
 #ifndef Poly_h
 #define Poly_h
 
+#if __cplusplus < 201101
+#error "require c++11"
+#endif
+
 #include <iostream>
 #include <list>
 #include <initializer_list>
@@ -11,6 +15,8 @@ struct Term {
 
 	static char sym;
 	static bool highest_term;
+	static std::string exp_sign;
+	static std::string multiply_sign;
 
 	T coef;		// coefficient
 	int exp;	// exponent
@@ -36,8 +42,11 @@ struct Term {
 	void coefficient(std::ostream &os) const
 	{
 		T abscoef = coef < 0 ? -coef : coef;
-		if (exp == 0 || abscoef != 1)
+		if (exp == 0) {
 			os << abscoef;
+		} else if (abscoef != 1) {
+			os << abscoef << multiply_sign;
+		}
 	}
 
 	void exponent(std::ostream &os) const
@@ -47,12 +56,14 @@ struct Term {
 		else if (exp == 1)
 			os << sym;
 		else
-			os << sym << '^' << exp;
+			os << sym << exp_sign << exp;
 	}
 };
 
 template <class T> char Term<T>::sym = 'x';
 template <class T> bool Term<T>::highest_term = true;
+template <class T> std::string Term<T>::exp_sign = "^";
+template <class T> std::string Term<T>::multiply_sign = "";
 
 template <class T>
 std::ostream &operator<<(std::ostream &os, const Term<T> &rhs)
