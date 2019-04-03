@@ -1,14 +1,86 @@
-#include "calendar.h"
+#ifndef Date_h
+#define Date_h
+
+#include <stdio.h>
+#include <string.h>	// strtok()
+#include <stdlib.h>	// atoi()
+#include <ctype.h>	// tolower()
+#include <time.h>	// time()
+
+// typedefs
+typedef int bool;
+const bool true = 1;
+const bool false = 0;
+
+typedef int Date;				// 0 = Dec 31 -0001, 1 = Jan 1 0001
+typedef int Year;
+typedef int Month;
+typedef int Day;				// day of month
+
+// consts
+extern const int YEAR;			// days in a year
+extern const int QUADYEAR;		// days in 4 years
+extern const int CENTURY;		// days in 100 years
+extern const int QUADCENTURY;	// days in 400 years
+
+extern const Date YEAR1;		// Mon Jan 1 0001  
+extern const Date YEAR1970;		// Thu Jan 1 1970
+extern const Date YEAR2001;		// Mon Jan 1 2001  
+extern const Date BIRTHDAY;		// Wed Feb 19 1997
+
+extern char *month_name[];
+extern char *Month_name[];
+extern char *weekday_name[];
+
+// helper functions
+extern bool is_leap(const Year);
+extern Month str2month(const char*);
+extern void month2str(char*, const Month);
+extern int month_length(const Month, const Year);
+
+// constructors of date
+extern Date int2date(const Year, const Month, const Day);
+// format: monthname day year
+extern Date str2date(const char*);
+
+// input
+extern void date_scanf(Date *);
+
+// getters
+extern void parse_year(const Date, Year*, Day*);
+extern Year get_year(const Date);
+extern Day get_doy(const Date);	// day of year
+
+extern void parse_month(const Date, Year*, Month*, Day*);
+extern Month get_month(const Date);
+extern Day get_day(const Date);
+
+extern void get_weekday(char*, const Date);
+
+// output
+extern void date_str(char*, const Date);
+extern void date_printf(const Date);
+extern void cal_str(char*, const Date);
+extern void cal_printf(const Date);
+
+// operators
+// you can add or subtract Date with int freely
+
+// use system time to tell what day is today
+extern Date buildday();
+extern Date today();
 
 // -------- consts --------
 
-const Date YEAR1 = 1;						// 1
 const int YEAR = 365;						// 365
 const int QUADYEAR = 4 * YEAR + 1;			// 1461
 const int CENTURY = 25 * QUADYEAR - 1;		// 36524
 const int QUADCENTURY = 4 * CENTURY + 1;	// 146097
-const Date YEAR2001 = 5 * QUADCENTURY + 1;	// 730486
+
+const Date YEAR1 = 1;						// 1
 const Date YEAR1970 = 719163;				// 719163
+const Date YEAR2001 = 5 * QUADCENTURY + 1;	// 730486
+const Date BIRTHDAY = 729074;				// 729074
 
 // -------- helper functions --------
 
@@ -40,9 +112,9 @@ Month str2month(const char *s)
 					return i+1;
 			}
 		}
-		printf("invalid monthname %s\n", s);
+		//printf("invalid monthname %s\n", s);
 	}
-	exit(1);
+	return 0;
 }
 
 void month2str(char *buf, const Month m)
@@ -136,6 +208,7 @@ Date str2date(const char *str)
 
 	s = strtok(s, delim);
 	Month m = str2month(s);
+	if (!m) m = atoi(s);
 	s = strtok(NULL, delim);
 	Day d = atoi(s);
 	s = strtok(NULL, delim);
@@ -220,7 +293,7 @@ void get_weekday(char *buf, const Date date)
 
 // -------- output --------
 
-void date2str(char *buf, const Date date)
+void date_str(char *buf, const Date date)
 {
 	Year year; Month month; Day day;
 	parse_month(date, &year, &month, &day);
@@ -235,11 +308,11 @@ void date2str(char *buf, const Date date)
 void date_printf(const Date date)
 {
 	char buf[256];
-	date2str(buf, date);
+	date_str(buf, date);
 	printf("%s", buf);
 }
 
-void cal2str(char *buf, const Date date)
+void cal_str(char *buf, const Date date)
 {
 	Year year; Month month; Day day;
 	parse_month(date, &year, &month, &day);
@@ -278,20 +351,19 @@ void cal2str(char *buf, const Date date)
 void cal_printf(const Date date)
 {
 	char buf[1024];
-	cal2str(buf, date);
+	cal_str(buf, date);
 	printf("%s", buf);
 }
 
 Date buildday()
 {
-	printf("buildday: %s\n", __DATE__);
 	return str2date(__DATE__);
 }
 
-int main()
+Date today()
 {
-	//test_today();
-	//test_int2date();
-	test_cal_printf();
-	return 0;
+	// 86400 = 60 * 60 * 24
+	return YEAR1970 + time(NULL) / 86400;
 }
+
+#endif // Date_h
