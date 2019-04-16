@@ -28,8 +28,8 @@ class Rat
 	friend std::ostream& operator<<(std::ostream &, const Rat &);
 	friend std::istream& operator>>(std::istream &, Rat &);
 
-	friend Int abs(const Int &);
-	friend int sgn(const Int &);	// return -1, 0 or 1
+	friend Rat abs(const Rat &);
+	friend int sgn(const Rat &);	// return -1, 0 or 1
 
 public:
 	// construct a rational number values n / d + i.

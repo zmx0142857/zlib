@@ -1,5 +1,7 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef Test_h
+#define Test_h
+
+#ifdef __cplusplus
 
 #include <iostream>
 #include <sstream>
@@ -13,17 +15,46 @@ protected:
 public:
 	bool test(const std::string &s="") {
 		++count;
-		std::string this_str(this->str());
-		str("");					// clear inner string
-		if (this_str == s)
+		if (this->str() == s) {
+			str("");					// clear inner string
 			return true;
-		std::cerr << "-------- test #" << count << " --------\n"
+		} else {
+			std::cerr << "-------- test #" << count << " --------\n"
 					 "expected:\n"
 				  << s << "\n\n"
 					 "got:\n"
-				  << this_str << "\n\n";
-		return false;
+				  << this->str() << "\n\n";
+			str("");					// clear inner string
+			return false;
+		}
 	}
 };
 
-#endif // TEST_H
+#else // __cplusplus
+
+int test_count = 0;
+char test_buffer_pool[100000];
+char *test_buffer = test_buffer_pool;
+
+#define tprintf(args) test_buffer = sprintf(test_buffer, args)
+
+int test(const char *str)
+{
+	++test_count;
+	if (strcmp(test_buffer, str) == 0) {
+		test_buffer = test_buffer_pool;
+		return 1;
+	} else {
+		printf("-------- test #%d --------\n"
+			   "expected:\n"
+			   "%s\n\n"
+			   "got:\n"
+			   "%s\n\n", test_count, str, test_buffer);
+		test_buffer = test_buffer_pool;
+		return 0;
+	}
+}
+
+#endif // __cplusplus
+
+#endif // Test_h

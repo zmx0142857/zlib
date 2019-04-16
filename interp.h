@@ -10,7 +10,7 @@
 #include <algorithm>	// sort
 #include "poly.h"
 
-const char *LIST_SIZE_NEQ = "The size of two lists are not equal!";
+const char *LIST_SIZE_NEQ = "two vectors must have same size.";
 
 /*
 	Build Lagrange interpolation polynomial and compute its value.
@@ -160,7 +160,7 @@ public:
 	void erase(size_t n=1)
 	{
 		if (diff.size() < n)
-			throw std::out_of_range("has no enough data to erase!");
+			throw std::out_of_range("no enough data to erase!");
 		for (size_t i = 0; i < n; ++i)
 			diff.pop_back();
 	}
