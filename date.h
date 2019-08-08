@@ -287,8 +287,8 @@ void get_weekday(char *buf, const Date date)
 	static const char *weekday_name[] = {
 		"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 	};
-
-	strcpy(buf, weekday_name[date % 7]);	// Dec 31 -0001 was a Sunday
+	int res = date % 7;
+	strcpy(buf, weekday_name[res < 0 ? res + 7 : res]);	// Dec 31 -0001 was a Sunday
 }
 
 // -------- output --------
